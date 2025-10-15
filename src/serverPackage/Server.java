@@ -23,7 +23,7 @@ public class Server {
             int x = in.readInt();
             System.out.println("Serveur a reçu x = " + x);
 
-            // Traitement : produit par 5
+            // produit par 5
             int resultat = x * 5;
             System.out.println("Serveur a calculé : " + x + " * 5 = " + resultat);
 
@@ -31,12 +31,10 @@ public class Server {
             out.writeInt(resultat);
             System.out.println("Résultat envoyé au client.");
 
-            // Fermeture
             in.close();
             out.close();
             socket.close();
             socketServer.close();
-            System.out.println("Serveur arrêté.");
 
         } catch (IOException e) {
             e.printStackTrace();
