@@ -1,41 +1,69 @@
 package serverPackage;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 
 public class Server {
     public static void main(String[] args) {
         try {
-            // Création du serveur sur le port 1234
-            ServerSocket socketServer = new ServerSocket(1234);
-            System.out.println("Serveur démarré, en attente d’un client...");
-
-            // Attente de la connexion d’un client
-            Socket socket = socketServer.accept();
-            System.out.println("Un client est connecté !");
-
-            // Création des flux d’entrée/sortie
+            InetAddress ipServeur = InetAddress.getLocalHost();
+            int port = 1234;
+            InetSocketAddress socketAddress = new InetSocketAddress(ipServeur, port);
+            ServerSocket serverSocket = new ServerSocket();
+            serverSocket.bind(socketAddress);
+            System.out.println("Serveur démarré sur " + ipServeur.getHostAddress() + ":" + port);
+            System.out.println("En attente d’un client...");
+            Socket socket = serverSocket.accept();
+            System.out.println("Client connecté depuis " + socket.getInetAddress().getHostAddress());
             DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-
-            // Lecture de l’entier envoyé par le client
-            int x = in.readInt();
-            System.out.println("Serveur a reçu x = " + x);
-
-            // produit par 5
-            int resultat = x * 5;
-            System.out.println("Serveur a calculé : " + x + " * 5 = " + resultat);
-
-            // Envoi du résultat au client
-            out.writeInt(resultat);
+            int operation = in.readInt(); 
+            double a = in.readDouble();
+            double b = in.readDouble();
+            double resultat = 0;
+            String symbole = "";
+            switch (operation) {
+                case 1:
+                    resultat = a + b;
+                    symbole = "+";
+                    break;
+                case 2:
+                    resultat = a - b;
+                    symbole = "-";
+                    break;
+                case 3:
+                    resultat = a * b;
+                    symbole = "*";
+                    break;
+                case 4:
+                    if (b != 0) {
+                        resultat = a / b;
+                    } else {
+                        out.writeUTF("Erreur : division par zero !");
+                        in.close();
+                        out.close();
+                        socket.close();
+                        serverSocket.close();
+                        return;
+                    }
+                    symbole = "/";
+                    break;
+                default:
+                    out.writeUTF("opération invalide !");
+                    in.close();
+                    out.close();
+                    socket.close();
+                    serverSocket.close();
+                    return;
+            }
+            System.out.println("Calcul demandé : " + a + " " + symbole + " " + b + " = " + resultat);
+            out.writeUTF("Résultat : " + a + " " + symbole + " " + b + " = " + resultat);
             System.out.println("Résultat envoyé au client.");
-
             in.close();
             out.close();
             socket.close();
-            socketServer.close();
-
+            serverSocket.close();
+            System.out.println("Serveur arrêté.");
         } catch (IOException e) {
             e.printStackTrace();
         }
